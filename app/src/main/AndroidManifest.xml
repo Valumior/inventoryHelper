@@ -26,8 +26,11 @@
         <activity android:name=".EntryListActivity" />
         <activity android:name=".EntryDetailsActivity" />
         <activity android:name=".EntryEditActivity" />
-        <activity android:name=".QRReaderActivity"
-            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".QRReaderActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name=".QRReaderMassActivity" />
+        <activity android:name=".InventorySessionActivity"></activity>
     </application>
 
 </manifest>
