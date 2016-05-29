@@ -20,16 +20,26 @@ import javax.net.ssl.HttpsURLConnection;
  * Created by Valu on 2016-05-15.
  */
 public class Entry {
+
+    public enum InventoryStatus{
+        UNLISTED,
+        MISSING,
+        PRESENT,
+        EXTRA,
+    }
+
     private String idNumber;
     private String name;
     private String description;
     private Room room;
+    private InventoryStatus inventoryStatus;
 
     public Entry() {
         this.idNumber = "";
         this.name = "";
         this.description = "";
         this.room = new Room();
+        this.inventoryStatus = InventoryStatus.UNLISTED;
     }
 
     public Entry(String idNumber, String name, String description, Room room) {
@@ -37,6 +47,7 @@ public class Entry {
         this.name = name;
         this.description = description;
         this.room = room;
+        this.inventoryStatus = InventoryStatus.UNLISTED;
     }
 
     public String getIdNumber() {
@@ -69,6 +80,14 @@ public class Entry {
 
     public void setRoom(Room room) {
         this.room = room;
+    }
+
+    public InventoryStatus getInventoryStatus() {
+        return inventoryStatus;
+    }
+
+    public void setInventoryStatus(InventoryStatus inventoryStatus) {
+        this.inventoryStatus = inventoryStatus;
     }
 
     public static Entry parseJSON(JSONObject jsonObject) throws JSONException{

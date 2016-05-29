@@ -6,8 +6,6 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -20,8 +18,11 @@ public class InventorySessionActivity extends AppCompatActivity {
     ListView inventoryEntryListView;
     Button inventoryScanButton, inventoryReportButton;
     int roomId, inventoryOrderId;
+    Room room;
     String server, token;
     ArrayList<String> readCodes;
+    ArrayList<Entry> report;
+    ArrayList<Entry> anomaly;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +43,8 @@ public class InventorySessionActivity extends AppCompatActivity {
         server = sharedPreferences.getString("server", "");
 
         readCodes = new ArrayList<>();
+        report = new ArrayList<>();
+        anomaly = new ArrayList<>();
 
         Bundle extras = getIntent().getExtras();
         if(extras != null){
@@ -58,6 +61,26 @@ public class InventorySessionActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == RESULT_OK){
             readCodes = data.getStringArrayListExtra("readCodes");
+            EntryScanCheckDownloader downloader = new EntryScanCheckDownloader(readCodes, this);
+            downloader.execute(server, token);
+        }
+    }
+
+    private void prepareReport(ArrayList<Entry> scanResult){
+        for (int i = 0; i < report.size(); ++i){
+            for (int j = 0; j < scanResult.size(); ++j){
+                if(report.get(i).getIdNumber().equals(scanResult.get(j).getIdNumber())){
+                    report.get(i).setInventoryStatus(Entry.InventoryStatus.PRESENT);
+                    scanResult.remove(j);
+                    break;
+                }
+            }
+        }
+
+        for(int i = 0; i < scanResult.size(); ++i){
+            Entry entry = scanResult.get(i);
+            entry.setInventoryStatus(Entry.InventoryStatus.EXTRA);
+            anomaly.add(entry);
         }
     }
 
@@ -85,20 +108,17 @@ public class InventorySessionActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(final ArrayList<Entry> entries) {
-            if(this.progressDialog.isShowing())
-                this.progressDialog.dismiss();
             if(entries != null){
-
-                inventoryScanButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(getApplicationContext(), QRReaderMassActivity.class);
-                        intent.putStringArrayListExtra("readCodes", readCodes);
-                        startActivityForResult(intent, 1);
-                    }
-                });
-
+                report = entries;
+                for(int i = 0; i < report.size(); ++i){
+                    report.get(i).setInventoryStatus(Entry.InventoryStatus.MISSING);
+                }
+                prepareReport(new ArrayList<Entry>());
+                if(this.progressDialog.isShowing())
+                    this.progressDialog.dismiss();
             } else {
+                if(this.progressDialog.isShowing())
+                    this.progressDialog.dismiss();
                 Toast toast = Toast.makeText(getApplicationContext(), "No entries found. Check your connection or pick another room.", Toast.LENGTH_SHORT);
                 toast.show();
                 finish();
@@ -134,12 +154,57 @@ public class InventorySessionActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Room room) {
             if(room != null) {
+                InventorySessionActivity.this.room = room;
                 EntryAsyncDownloader downloader = new EntryAsyncDownloader(this.progressDialog, room);
                 downloader.execute(this.server, this.token);
             } else {
                 Toast toast = Toast.makeText(getApplicationContext(), "Connection error. Check your connection and try again.", Toast.LENGTH_SHORT);
                 toast.show();
                 finish();
+            }
+        }
+    }
+
+    private class EntryScanCheckDownloader extends AsyncTask<String, Void, ArrayList<Entry>>{
+        ProgressDialog progressDialog;
+        ArrayList<String> scans;
+        ArrayList<String> invalidScans;
+
+        public EntryScanCheckDownloader(ArrayList<String> scans, InventorySessionActivity activity){
+            this.scans = scans;
+            this.invalidScans = new ArrayList<>();
+            this.progressDialog = new ProgressDialog(activity);
+        }
+
+        @Override
+        protected ArrayList<Entry> doInBackground(String... params) {
+            ArrayList<Entry> entries = new ArrayList<>();
+
+            for(int i = 0; i < scans.size(); ++i){
+                Entry entry = Entry.getEntry(params[0], params[1], scans.get(i));
+                if(entry != null){
+                    entries.add(entry);
+                } else {
+                    invalidScans.add(scans.get(i));
+                }
+            }
+
+            return entries;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            this.progressDialog.setMessage("Analyzing scans.");
+            this.progressDialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<Entry> entries) {
+            this.scans.removeAll(this.invalidScans);
+            readCodes = this.scans;
+            prepareReport(entries);
+            if(this.progressDialog.isShowing()){
+                this.progressDialog.dismiss();
             }
         }
     }
