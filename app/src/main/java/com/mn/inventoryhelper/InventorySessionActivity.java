@@ -1,11 +1,15 @@
 package com.mn.inventoryhelper;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -20,9 +24,8 @@ public class InventorySessionActivity extends AppCompatActivity {
     int roomId, inventoryOrderId;
     Room room;
     String server, token;
-    ArrayList<String> readCodes;
-    ArrayList<Entry> report;
-    ArrayList<Entry> anomaly;
+    ArrayList<String> readCodes, roomCodes;
+    ArrayList<Entry> report, anomaly;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +46,7 @@ public class InventorySessionActivity extends AppCompatActivity {
         server = sharedPreferences.getString("server", "");
 
         readCodes = new ArrayList<>();
+        roomCodes = new ArrayList<>();
         report = new ArrayList<>();
         anomaly = new ArrayList<>();
 
@@ -61,27 +65,28 @@ public class InventorySessionActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == RESULT_OK){
             readCodes = data.getStringArrayListExtra("readCodes");
-            EntryScanCheckDownloader downloader = new EntryScanCheckDownloader(readCodes, this);
-            downloader.execute(server, token);
         }
     }
 
-    private void prepareReport(ArrayList<Entry> scanResult){
+    private void prepareReport(){
         for (int i = 0; i < report.size(); ++i){
-            for (int j = 0; j < scanResult.size(); ++j){
-                if(report.get(i).getIdNumber().equals(scanResult.get(j).getIdNumber())){
-                    report.get(i).setInventoryStatus(Entry.InventoryStatus.PRESENT);
-                    scanResult.remove(j);
-                    break;
-                }
+            if(readCodes.contains(report.get(i).getIdNumber())) {
+                report.get(i).setInventoryStatus(Entry.InventoryStatus.PRESENT);
             }
         }
 
-        for(int i = 0; i < scanResult.size(); ++i){
-            Entry entry = scanResult.get(i);
-            entry.setInventoryStatus(Entry.InventoryStatus.EXTRA);
-            anomaly.add(entry);
-        }
+        ArrayList<String> extra = new ArrayList<>(readCodes);
+        extra.removeAll(roomCodes);
+        EntryScanCheckDownloader downloader = new EntryScanCheckDownloader(extra, this);
+        downloader.execute(server, token);
+    }
+
+    private void fillList(){
+        ArrayList<Entry> allEntries = new ArrayList<>();
+        allEntries.addAll(report);
+        allEntries.addAll(anomaly);
+        EntryAdapter adapter = new EntryAdapter(InventorySessionActivity.this, allEntries);
+        inventoryEntryListView.setAdapter(adapter);
     }
 
     private class EntryAsyncDownloader extends AsyncTask<String, Void, ArrayList<Entry>> {
@@ -108,17 +113,73 @@ public class InventorySessionActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(final ArrayList<Entry> entries) {
+            if(this.progressDialog.isShowing())
+                this.progressDialog.dismiss();
             if(entries != null){
                 report = entries;
                 for(int i = 0; i < report.size(); ++i){
                     report.get(i).setInventoryStatus(Entry.InventoryStatus.MISSING);
+                    roomCodes.add(report.get(i).getIdNumber());
                 }
-                prepareReport(new ArrayList<Entry>());
-                if(this.progressDialog.isShowing())
-                    this.progressDialog.dismiss();
+                prepareReport();
+
+                inventoryRoomLabel.setText(room.toString());
+
+                inventoryEntryListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(final AdapterView<?> parent, View view, final int position, long id) {
+                        final Entry entry = (Entry) parent.getAdapter().getItem(position);
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(InventorySessionActivity.this);
+
+                        switch (entry.getInventoryStatus()){
+                            case MISSING:
+                                builder.setTitle("Brakujący wpis.");
+                                builder.setMessage("Nie potwierdzono obecności wpisu. Korekcja ręczna?");
+
+                                builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        report.get(report.indexOf(entry)).setInventoryStatus(Entry.InventoryStatus.PRESENT);
+                                        fillList();
+
+                                        dialog.dismiss();
+                                    }
+                                });
+
+                                builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                                break;
+                            case EXTRA:
+                                builder.setTitle("Nadplanowy wpis.");
+                                builder.setMessage("Wykryto nadplanowy wpis. Zignorować?");
+
+                                builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        anomaly.remove(anomaly.indexOf(entry));
+                                        readCodes.remove(entry.getIdNumber());
+
+                                        fillList();
+                                        dialog.dismiss();
+                                    }
+                                });
+
+                                builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                                break;
+                        }
+                    }
+                });
             } else {
-                if(this.progressDialog.isShowing())
-                    this.progressDialog.dismiss();
                 Toast toast = Toast.makeText(getApplicationContext(), "No entries found. Check your connection or pick another room.", Toast.LENGTH_SHORT);
                 toast.show();
                 finish();
@@ -200,9 +261,24 @@ public class InventorySessionActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(ArrayList<Entry> entries) {
-            this.scans.removeAll(this.invalidScans);
-            readCodes = this.scans;
-            prepareReport(entries);
+            readCodes.removeAll(this.invalidScans);
+
+            for(int i = 0; i < entries.size(); ++i){
+                Entry entry = entries.get(i);
+                Boolean exists = false;
+                for(int j = 0; j < anomaly.size(); ++j){
+                    if(anomaly.get(i).getIdNumber().equals(entry.getIdNumber())){
+                        exists = true;
+                        break;
+                    }
+                }
+                if(!exists){
+                    entry.setInventoryStatus(Entry.InventoryStatus.EXTRA);
+                    anomaly.add(entry);
+                }
+            }
+
+            fillList();
             if(this.progressDialog.isShowing()){
                 this.progressDialog.dismiss();
             }
