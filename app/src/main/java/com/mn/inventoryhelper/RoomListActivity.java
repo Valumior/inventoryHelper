@@ -16,6 +16,7 @@ import java.util.ArrayList;
 public class RoomListActivity extends AppCompatActivity {
 
     ListView roomListView;
+    Boolean inventory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,8 +32,10 @@ public class RoomListActivity extends AppCompatActivity {
         String token = application.getToken();
 
         Bundle extras = getIntent().getExtras();
-        if(extras != null){
-            int id = extras.getInt("address");
+        inventory = extras.getBoolean("inventory", false);
+        int id = extras.getInt("address", 0);
+
+        if(id != 0){
             AddressItemAsyncDownloader downloader = new AddressItemAsyncDownloader(this);
             downloader.execute(server, token, Integer.toString(id));
         } else {
@@ -84,16 +87,29 @@ public class RoomListActivity extends AppCompatActivity {
                 RoomAdapter adapter = new RoomAdapter(RoomListActivity.this, rooms);
                 roomListView.setAdapter(adapter);
 
-                roomListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        Room room = (Room)parent.getAdapter().getItem(position);
+                if(inventory){
+                    roomListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            Room room = (Room)parent.getAdapter().getItem(position);
 
-                        Intent intent = new Intent(getApplicationContext(), EntryListActivity.class);
-                        intent.putExtra("room", room.getId());
-                        startActivity(intent);
-                    }
-                });
+                            Intent intent = new Intent(getApplicationContext(), InventorySessionActivity.class);
+                            intent.putExtra("room", room.getId());
+                            startActivity(intent);
+                        }
+                    });
+                } else {
+                    roomListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            Room room = (Room)parent.getAdapter().getItem(position);
+
+                            Intent intent = new Intent(getApplicationContext(), EntryListActivity.class);
+                            intent.putExtra("room", room.getId());
+                            startActivity(intent);
+                        }
+                    });
+                }
             } else {
                 if(this.address != null){
                     Toast toast = Toast.makeText(getApplicationContext(), "No addresses found. Check your connection or try another room.", Toast.LENGTH_SHORT);

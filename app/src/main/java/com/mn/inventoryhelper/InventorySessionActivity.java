@@ -52,7 +52,7 @@ public class InventorySessionActivity extends AppCompatActivity {
 
         Bundle extras = getIntent().getExtras();
         if(extras != null){
-            roomId = extras.getInt("roomId");
+            roomId = extras.getInt("room");
             inventoryOrderId = extras.getInt("orderId");
             RoomItemAsyncDownloader downloader = new RoomItemAsyncDownloader(this);
             downloader.execute(server, token);

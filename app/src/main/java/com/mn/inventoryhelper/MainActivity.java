@@ -10,7 +10,7 @@ import com.dlazaro66.qrcodereaderview.QRCodeReaderView;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button readQRButton, getAllRoomsButton, getAllAddressesButton;
+    Button readQRButton, getAllRoomsButton, getAllAddressesButton, getInventoryOrdersButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +20,7 @@ public class MainActivity extends AppCompatActivity {
         readQRButton = (Button) findViewById(R.id.readQRButton);
         getAllRoomsButton = (Button) findViewById(R.id.getAllRoomsButton);
         getAllAddressesButton = (Button) findViewById(R.id.getAllAddressesButton);
+        getInventoryOrdersButton = (Button) findViewById(R.id.getInventoryOrdersButton);
 
         readQRButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -41,6 +42,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), AddressListActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        getInventoryOrdersButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), RoomListActivity.class);
+                intent.putExtra("inventory", true);
                 startActivity(intent);
             }
         });

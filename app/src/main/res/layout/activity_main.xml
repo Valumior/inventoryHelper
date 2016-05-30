@@ -20,18 +20,24 @@
         android:id="@+id/readQRButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Read QR Code"/>
+        android:text="Czytaj Kod QR"/>
     <Button
         android:id="@+id/getAllRoomsButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Get all Rooms"/>
+        android:text="Pobierz pokoje"/>
 
     <Button
         android:id="@+id/getAllAddressesButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Get all Addresses"/>
+        android:text="Pobierz Adresy"/>
+
+    <Button
+        android:id="@+id/getInventoryOrdersButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Inwentaryzacja"/>
 
     <TextView
         android:layout_width="wrap_content"
