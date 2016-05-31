@@ -53,9 +53,9 @@ public class InventorySessionActivity extends AppCompatActivity {
         Bundle extras = getIntent().getExtras();
         if(extras != null){
             roomId = extras.getInt("room");
-            inventoryOrderId = extras.getInt("orderId");
+            inventoryOrderId = extras.getInt("orderId", 0);
             RoomItemAsyncDownloader downloader = new RoomItemAsyncDownloader(this);
-            downloader.execute(server, token);
+            downloader.execute(server, token, Integer.toString(roomId));
         } else {
             finish();
         }
@@ -65,6 +65,7 @@ public class InventorySessionActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == RESULT_OK){
             readCodes = data.getStringArrayListExtra("readCodes");
+            prepareReport();
         }
     }
 
@@ -87,6 +88,80 @@ public class InventorySessionActivity extends AppCompatActivity {
         allEntries.addAll(anomaly);
         EntryAdapter adapter = new EntryAdapter(InventorySessionActivity.this, allEntries);
         inventoryEntryListView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+    }
+
+    private AlertDialog createListDialog(final Entry entry){
+        AlertDialog.Builder builder = new AlertDialog.Builder(InventorySessionActivity.this);
+
+        switch (entry.getInventoryStatus()){
+            case MISSING:
+                builder.setTitle("Brakujący wpis.");
+                builder.setMessage("Nie potwierdzono obecności wpisu. Korekcja ręczna?");
+
+                builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        report.get(report.indexOf(entry)).setInventoryStatus(Entry.InventoryStatus.PRESENT);
+                        fillList();
+
+                        dialog.dismiss();
+                    }
+                });
+
+                builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                break;
+            case EXTRA:
+                builder.setTitle("Nadplanowy wpis.");
+                builder.setMessage("Wykryto nadplanowy wpis. Zignorować?");
+
+                builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        anomaly.remove(anomaly.indexOf(entry));
+                        readCodes.remove(entry.getIdNumber());
+
+                        fillList();
+                        dialog.dismiss();
+                    }
+                });
+
+                builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                break;
+            case PRESENT:
+                builder.setTitle("Poprawny wpis.");
+                builder.setMessage("Wpis wypełniony poprawnie. Zresetować?");
+
+                builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        report.get(report.indexOf(entry)).setInventoryStatus(Entry.InventoryStatus.MISSING);
+                        fillList();
+
+                        dialog.dismiss();
+                    }
+                });
+
+                builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                break;
+        }
+
+        return builder.create();
     }
 
     private class EntryAsyncDownloader extends AsyncTask<String, Void, ArrayList<Entry>> {
@@ -100,7 +175,7 @@ public class InventorySessionActivity extends AppCompatActivity {
 
         @Override
         protected ArrayList<Entry> doInBackground(String... params) {
-            return room.getEntries(params[0], params[1]);
+            return this.room.getEntries(params[0], params[1]);
         }
 
         @Override
@@ -112,7 +187,7 @@ public class InventorySessionActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(final ArrayList<Entry> entries) {
+        protected void onPostExecute(ArrayList<Entry> entries) {
             if(this.progressDialog.isShowing())
                 this.progressDialog.dismiss();
             if(entries != null){
@@ -130,53 +205,17 @@ public class InventorySessionActivity extends AppCompatActivity {
                     public void onItemClick(final AdapterView<?> parent, View view, final int position, long id) {
                         final Entry entry = (Entry) parent.getAdapter().getItem(position);
 
-                        AlertDialog.Builder builder = new AlertDialog.Builder(InventorySessionActivity.this);
+                        AlertDialog dialog = createListDialog(entry);
+                        dialog.show();
+                    }
+                });
 
-                        switch (entry.getInventoryStatus()){
-                            case MISSING:
-                                builder.setTitle("Brakujący wpis.");
-                                builder.setMessage("Nie potwierdzono obecności wpisu. Korekcja ręczna?");
-
-                                builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        report.get(report.indexOf(entry)).setInventoryStatus(Entry.InventoryStatus.PRESENT);
-                                        fillList();
-
-                                        dialog.dismiss();
-                                    }
-                                });
-
-                                builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                    }
-                                });
-                                break;
-                            case EXTRA:
-                                builder.setTitle("Nadplanowy wpis.");
-                                builder.setMessage("Wykryto nadplanowy wpis. Zignorować?");
-
-                                builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        anomaly.remove(anomaly.indexOf(entry));
-                                        readCodes.remove(entry.getIdNumber());
-
-                                        fillList();
-                                        dialog.dismiss();
-                                    }
-                                });
-
-                                builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                    }
-                                });
-                                break;
-                        }
+                inventoryScanButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(getApplicationContext(), QRReaderMassActivity.class);
+                        intent.putStringArrayListExtra("readCodes", readCodes);
+                        startActivityForResult(intent, 1);
                     }
                 });
             } else {
@@ -267,7 +306,7 @@ public class InventorySessionActivity extends AppCompatActivity {
                 Entry entry = entries.get(i);
                 Boolean exists = false;
                 for(int j = 0; j < anomaly.size(); ++j){
-                    if(anomaly.get(i).getIdNumber().equals(entry.getIdNumber())){
+                    if(anomaly.get(j).getIdNumber().equals(entry.getIdNumber())){
                         exists = true;
                         break;
                     }

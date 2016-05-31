@@ -17,7 +17,7 @@
 
     <ListView
         android:id="@+id/inventoryEntryListView"
-        android:layout_width="0px"
+        android:layout_width="match_parent"
         android:layout_height="0px"
         android:layout_weight="1">
 

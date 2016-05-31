@@ -32,8 +32,12 @@ public class RoomListActivity extends AppCompatActivity {
         String token = application.getToken();
 
         Bundle extras = getIntent().getExtras();
-        inventory = extras.getBoolean("inventory", false);
-        int id = extras.getInt("address", 0);
+        int id = 0;
+        inventory = false;
+        if(extras != null) {
+            inventory = extras.getBoolean("inventory", false);
+            id = extras.getInt("address", 0);
+        }
 
         if(id != 0){
             AddressItemAsyncDownloader downloader = new AddressItemAsyncDownloader(this);
@@ -42,6 +46,7 @@ public class RoomListActivity extends AppCompatActivity {
             RoomAsyncDownloader downloader = new RoomAsyncDownloader(this);
             downloader.execute(server, token);
         }
+
     }
 
     private class RoomAsyncDownloader extends AsyncTask<String, Void, ArrayList<Room>>{

@@ -66,7 +66,7 @@ public class EntryListActivity extends AppCompatActivity {
             if(this.progressDialog.isShowing())
                 this.progressDialog.dismiss();
             if(entries != null){
-                EntryAdapter adapter = new EntryAdapter(EntryListActivity.this,entries);
+                EntryAdapter adapter = new EntryAdapter(EntryListActivity.this, entries);
                 entryListView.setAdapter(adapter);
 
                 entryListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
