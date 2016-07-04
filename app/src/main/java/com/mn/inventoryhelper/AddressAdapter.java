@@ -10,9 +10,6 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-/**
- * Created by Valu on 2016-05-15.
- */
 public class AddressAdapter extends ArrayAdapter<Address> {
 
     public AddressAdapter(Context context, ArrayList<Address> addresses){
