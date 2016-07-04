@@ -66,7 +66,7 @@ public class EntryDetailsActivity extends AppCompatActivity {
                 this.progressDialog.dismiss();
             if(entry != null){
                 entryDetailsTitle.setText(entry.getName());
-                entryDetailsId.setText(entry.getIdNumber());
+                entryDetailsId.setText(entry.getSigning());
                 entryDetailsRoom.setText(entry.getRoom().toString());
                 entryDetailsDescription.setText(entry.getDescription());
 
@@ -74,7 +74,7 @@ public class EntryDetailsActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(getApplicationContext(), EntryEditActivity.class);
-                        intent.putExtra("idNumber", entry.getIdNumber());
+                        intent.putExtra("idNumber", entry.getSigning());
                         intent.putExtra("room", entry.getRoom().toString());
                         startActivity(intent);
                         finish();

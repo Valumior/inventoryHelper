@@ -11,9 +11,6 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-/**
- * Created by Valu on 2016-05-15.
- */
 public class EntryAdapter extends ArrayAdapter<Entry> {
     public EntryAdapter(Context context, ArrayList<Entry> entries){
         super(context, 0, entries);
@@ -31,7 +28,7 @@ public class EntryAdapter extends ArrayAdapter<Entry> {
         TextView entryItemName = (TextView) convertView.findViewById(R.id.entryItemName);
         LinearLayout entryItemBackground = (LinearLayout) convertView.findViewById(R.id.entryItemBackground);
 
-        entryItemId.setText(entry.getIdNumber());
+        entryItemId.setText(entry.getSigning());
         entryItemId.setTextColor(Color.BLACK);
         entryItemName.setText(entry.getName());
         entryItemName.setTextColor(Color.BLACK);

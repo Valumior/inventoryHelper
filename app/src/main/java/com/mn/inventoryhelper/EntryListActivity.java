@@ -1,7 +1,6 @@
 package com.mn.inventoryhelper;
 
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -75,7 +74,7 @@ public class EntryListActivity extends AppCompatActivity {
                         Entry entry = (Entry) parent.getAdapter().getItem(position);
 
                         Intent intent = new Intent(getApplicationContext(), EntryDetailsActivity.class);
-                        intent.putExtra("idNumber", entry.getIdNumber());
+                        intent.putExtra("idNumber", entry.getSigning());
                         startActivity(intent);
                         finish();
                     }

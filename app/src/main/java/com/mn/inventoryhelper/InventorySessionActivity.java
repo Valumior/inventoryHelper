@@ -71,7 +71,7 @@ public class InventorySessionActivity extends AppCompatActivity {
 
     private void prepareReport(){
         for (int i = 0; i < report.size(); ++i){
-            if(readCodes.contains(report.get(i).getIdNumber())) {
+            if(readCodes.contains(report.get(i).getSigning())) {
                 report.get(i).setInventoryStatus(Entry.InventoryStatus.PRESENT);
             }
         }
@@ -124,7 +124,7 @@ public class InventorySessionActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         anomaly.remove(anomaly.indexOf(entry));
-                        readCodes.remove(entry.getIdNumber());
+                        readCodes.remove(entry.getSigning());
 
                         fillList();
                         dialog.dismiss();
@@ -194,7 +194,7 @@ public class InventorySessionActivity extends AppCompatActivity {
                 report = entries;
                 for(int i = 0; i < report.size(); ++i){
                     report.get(i).setInventoryStatus(Entry.InventoryStatus.MISSING);
-                    roomCodes.add(report.get(i).getIdNumber());
+                    roomCodes.add(report.get(i).getSigning());
                 }
                 prepareReport();
 
@@ -306,7 +306,7 @@ public class InventorySessionActivity extends AppCompatActivity {
                 Entry entry = entries.get(i);
                 Boolean exists = false;
                 for(int j = 0; j < anomaly.size(); ++j){
-                    if(anomaly.get(j).getIdNumber().equals(entry.getIdNumber())){
+                    if(anomaly.get(j).getSigning().equals(entry.getSigning())){
                         exists = true;
                         break;
                     }

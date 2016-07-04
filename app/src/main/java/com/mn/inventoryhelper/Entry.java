@@ -1,5 +1,6 @@
 package com.mn.inventoryhelper;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import org.json.JSONArray;
@@ -16,9 +17,6 @@ import java.util.ArrayList;
 
 import javax.net.ssl.HttpsURLConnection;
 
-/**
- * Created by Valu on 2016-05-15.
- */
 public class Entry {
 
     public enum InventoryStatus{
@@ -28,34 +26,34 @@ public class Entry {
         EXTRA,
     }
 
-    private String idNumber;
+    private String signing;
     private String name;
     private String description;
     private Room room;
     private InventoryStatus inventoryStatus;
 
     public Entry() {
-        this.idNumber = "";
+        this.signing = "";
         this.name = "";
         this.description = "";
         this.room = new Room();
         this.inventoryStatus = InventoryStatus.UNLISTED;
     }
 
-    public Entry(String idNumber, String name, String description, Room room) {
-        this.idNumber = idNumber;
+    public Entry(String signing, String name, String description, Room room) {
+        this.signing = signing;
         this.name = name;
         this.description = description;
         this.room = room;
         this.inventoryStatus = InventoryStatus.UNLISTED;
     }
 
-    public String getIdNumber() {
-        return idNumber;
+    public String getSigning() {
+        return signing;
     }
 
-    public void setIdNumber(String idNumber) {
-        this.idNumber = idNumber;
+    public void setSigning(String signing) {
+        this.signing = signing;
     }
 
     public String getName() {
@@ -90,8 +88,21 @@ public class Entry {
         this.inventoryStatus = inventoryStatus;
     }
 
+    public String getInventoryStatusString(){
+        switch (this.inventoryStatus){
+            case MISSING:
+                return "R";
+            case PRESENT:
+                return "P";
+            case EXTRA:
+                return "E";
+            default:
+                return "";
+        }
+    }
+
     public static Entry parseJSON(JSONObject jsonObject) throws JSONException{
-        return new Entry(jsonObject.getString("id_number"), jsonObject.getString("name"),
+        return new Entry(jsonObject.getString("signing"), jsonObject.getString("name"),
                 jsonObject.getString("description"), Room.parseJSON(jsonObject.getJSONObject("room")));
     }
 
@@ -99,13 +110,36 @@ public class Entry {
         JSONObject json = new JSONObject();
 
         try {
-            json.put("id_number", this.idNumber);
+            json.put("signing", this.signing);
             json.put("room", this.room.getId());
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         return json;
+    }
+
+    public JSONObject toReportJSON(){
+        JSONObject json = new JSONObject();
+
+        try {
+            json.put("entry", this.signing);
+            json.put("status", this.getInventoryStatusString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return json;
+    }
+
+    @NonNull
+    public static String URLifySigning(String signing){
+        return signing.replace(' ', '_').replace('/', '-');
+    }
+
+    @NonNull
+    public static String DeURLifySigning(String signing){
+        return signing.replace('_', ' ').replace('-', '/');
     }
 
     @Nullable
@@ -152,9 +186,9 @@ public class Entry {
     }
 
     @Nullable
-    public static  Entry getEntry(String server, String token, String idNumber){
+    public static  Entry getEntry(String server, String token, String signing){
         try {
-            URL url = new URL(server + "api/entry/" + idNumber + "/");
+            URL url = new URL(server + "api/entry/" + URLifySigning(signing) + "/");
             String jsonResponse = "";
 
             HttpURLConnection connection = (HttpURLConnection)url.openConnection();
@@ -189,7 +223,7 @@ public class Entry {
 
     public boolean editEntry(String server, String token){
         try {
-            URL loginUrl = new URL(server + "api/entry/" + this.idNumber + "/");
+            URL loginUrl = new URL(server + "api/entry/" + URLifySigning(this.signing) + "/");
             String json = this.toJSON().toString();
 
             HttpURLConnection connection = (HttpsURLConnection) loginUrl.openConnection();
