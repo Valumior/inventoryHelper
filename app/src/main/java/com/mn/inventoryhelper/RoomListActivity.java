@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class RoomListActivity extends AppCompatActivity {
 
     ListView roomListView;
-    Boolean inventory;
+    int orderId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,19 +32,25 @@ public class RoomListActivity extends AppCompatActivity {
         String token = application.getToken();
 
         Bundle extras = getIntent().getExtras();
-        int id = 0;
-        inventory = false;
+
+        int addressId = 0;
+        boolean inventory = false;
         if(extras != null) {
             inventory = extras.getBoolean("inventory", false);
-            id = extras.getInt("address", 0);
+            addressId = extras.getInt("address", 0);
+            orderId = extras.getInt("orderId", 0);
         }
 
-        if(id != 0){
+        if(addressId != 0){
             AddressItemAsyncDownloader downloader = new AddressItemAsyncDownloader(this);
-            downloader.execute(server, token, Integer.toString(id));
+            downloader.execute(server, token, Integer.toString(addressId));
         } else {
-            RoomAsyncDownloader downloader = new RoomAsyncDownloader(this);
-            downloader.execute(server, token);
+            RoomAsyncDownloader downloader = new RoomAsyncDownloader(this, inventory);
+            if(inventory){
+                downloader.execute(server, token, Integer.toString(orderId));
+            } else {
+                downloader.execute(server, token);
+            }
         }
 
     }
@@ -53,15 +59,18 @@ public class RoomListActivity extends AppCompatActivity {
 
         ProgressDialog progressDialog;
         Address address;
+        boolean inventory;
 
-        public RoomAsyncDownloader(RoomListActivity activity){
+        public RoomAsyncDownloader(RoomListActivity activity, boolean inventory){
             this.progressDialog = new ProgressDialog(activity);
             this.address = null;
+            this.inventory = inventory;
         }
 
         public RoomAsyncDownloader(ProgressDialog progressDialog, Address address){
             this.progressDialog = progressDialog;
             this.address = address;
+            this.inventory = false;
         }
 
         @Override
@@ -72,7 +81,11 @@ public class RoomListActivity extends AppCompatActivity {
             if(address != null){
                 return address.getRooms(server, token);
             } else {
-                return Room.getRooms(server, token);
+                if(inventory){
+                    return InventoryOrder.getRooms(server, token, Integer.parseInt(params[2]));
+                } else {
+                    return Room.getRooms(server, token);
+                }
             }
         }
 
@@ -92,7 +105,7 @@ public class RoomListActivity extends AppCompatActivity {
                 RoomAdapter adapter = new RoomAdapter(RoomListActivity.this, rooms);
                 roomListView.setAdapter(adapter);
 
-                if(inventory){
+                if(this.inventory){
                     roomListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -100,6 +113,7 @@ public class RoomListActivity extends AppCompatActivity {
 
                             Intent intent = new Intent(getApplicationContext(), InventorySessionActivity.class);
                             intent.putExtra("room", room.getId());
+                            intent.putExtra("orderId", orderId);
                             startActivity(intent);
                         }
                     });
@@ -120,7 +134,7 @@ public class RoomListActivity extends AppCompatActivity {
                     Toast toast = Toast.makeText(getApplicationContext(), "No addresses found. Check your connection or try another room.", Toast.LENGTH_SHORT);
                     toast.show();
                 } else {
-                    Toast toast = Toast.makeText(getApplicationContext(), "Connection error. Check your connection and try again.", Toast.LENGTH_SHORT);
+                    Toast toast = Toast.makeText(getApplicationContext(), "Błąd połączenia. Sprawdź połączenie i spróbuj ponownie.", Toast.LENGTH_SHORT);
                     toast.show();
                 }
                 finish();

@@ -30,7 +30,8 @@
             android:name=".QRReaderActivity"
             android:screenOrientation="portrait" />
         <activity android:name=".QRReaderMassActivity" />
-        <activity android:name=".InventorySessionActivity"></activity>
+        <activity android:name=".InventorySessionActivity" />
+        <activity android:name=".InventoryOrderActivity"></activity>
     </application>
 
 </manifest>

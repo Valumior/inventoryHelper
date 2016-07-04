@@ -49,8 +49,7 @@ public class MainActivity extends AppCompatActivity {
         getInventoryOrdersButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), RoomListActivity.class);
-                intent.putExtra("inventory", true);
+                Intent intent = new Intent(getApplicationContext(), InventoryOrderActivity.class);
                 startActivity(intent);
             }
         });
