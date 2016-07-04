@@ -8,6 +8,7 @@ import android.app.Application;
 public class InventoryHelperApplication extends Application {
 
     private String token;
+    private UserPermissions userPermissions;
     private static final String PREFERENCES = "InventoryPreferences";
 
     public String getToken() {
@@ -16,6 +17,14 @@ public class InventoryHelperApplication extends Application {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public UserPermissions getUserPermissions() {
+        return userPermissions;
+    }
+
+    public void setUserPermissions(UserPermissions userPermissions) {
+        this.userPermissions = userPermissions;
     }
 
     public static String getPREFERENCES() {

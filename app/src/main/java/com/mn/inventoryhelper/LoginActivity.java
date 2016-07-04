@@ -98,15 +98,56 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean result) {
             if(result){
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(intent);
             } else {
                 errorText.setText("Login failed. Check server address and login credentials.");
                 errorText.setTextColor(Color.RED);
                 errorText.setVisibility(View.VISIBLE);
+
+                if(progressDialog.isShowing())
+                    progressDialog.dismiss();
             }
-            if(progressDialog.isShowing())
-                progressDialog.dismiss();
+        }
+    }
+
+    private class UserPermissionsDownloader extends AsyncTask<Void, Void, UserPermissions>{
+        private ProgressDialog progressDialog;
+
+        public UserPermissionsDownloader(ProgressDialog progressDialog){
+            this.progressDialog = progressDialog;
+        }
+
+        @Override
+        protected UserPermissions doInBackground(Void... params) {
+            SharedPreferences sharedPreferences = getSharedPreferences(InventoryHelperApplication.getPREFERENCES(), Context.MODE_PRIVATE);
+            String server = sharedPreferences.getString("server", "");
+
+            InventoryHelperApplication application = (InventoryHelperApplication) getApplicationContext();
+            String token = application.getToken();
+
+            return UserPermissions.getUserPermissions(server, token);
+        }
+
+        @Override
+        protected void onPostExecute(UserPermissions userPermissions) {
+            if(userPermissions != null){
+                InventoryHelperApplication application = (InventoryHelperApplication) getApplicationContext();
+                application.setUserPermissions(userPermissions);
+
+                if(progressDialog.isShowing())
+                    progressDialog.dismiss();
+
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(intent);
+            }
+            else {
+
+                errorText.setText("Login failed. Check server address and login credentials.");
+                errorText.setTextColor(Color.RED);
+                errorText.setVisibility(View.VISIBLE);
+
+                if(progressDialog.isShowing())
+                    progressDialog.dismiss();
+            }
         }
     }
 }
