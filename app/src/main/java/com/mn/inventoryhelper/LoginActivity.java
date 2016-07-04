@@ -98,6 +98,8 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean result) {
             if(result){
+                UserPermissionsDownloader downloader = new UserPermissionsDownloader(this.progressDialog);
+                downloader.execute();
             } else {
                 errorText.setText("Login failed. Check server address and login credentials.");
                 errorText.setTextColor(Color.RED);
