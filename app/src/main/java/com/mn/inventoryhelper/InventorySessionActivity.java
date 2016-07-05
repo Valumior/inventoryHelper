@@ -82,6 +82,13 @@ public class InventorySessionActivity extends AppCompatActivity {
         downloader.execute(server, token);
     }
 
+    private InventoryReport getReportObject(){
+        ArrayList<Entry> allEntries = new ArrayList<>();
+        allEntries.addAll(report);
+        allEntries.addAll(anomaly);
+        return new InventoryReport(inventoryOrderId, room, allEntries);
+    }
+
     private void fillList(){
         ArrayList<Entry> allEntries = new ArrayList<>();
         allEntries.addAll(report);
@@ -218,8 +225,35 @@ public class InventorySessionActivity extends AppCompatActivity {
                         startActivityForResult(intent, 1);
                     }
                 });
+
+                inventoryReportButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(InventorySessionActivity.this);
+                        builder.setTitle("Wysyłanie raportu");
+                        builder.setMessage("Czy napewno chcesz wysłać raport?");
+
+                        builder.setPositiveButton("Tak", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                RoomReportUploader uploader = new RoomReportUploader(InventorySessionActivity.this, getReportObject());
+                                uploader.execute(server, token);
+
+                                dialog.dismiss();
+                            }
+                        });
+
+                        builder.setNegativeButton("Nie", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+                    }
+                });
+
             } else {
-                Toast toast = Toast.makeText(getApplicationContext(), "No entries found. Check your connection or pick another room.", Toast.LENGTH_SHORT);
+                Toast toast = Toast.makeText(getApplicationContext(), "Nie znaleziono wpisów. Sprawdź połączenie lub wybierz inne pomieszczenie.", Toast.LENGTH_SHORT);
                 toast.show();
                 finish();
             }
@@ -294,7 +328,7 @@ public class InventorySessionActivity extends AppCompatActivity {
 
         @Override
         protected void onPreExecute() {
-            this.progressDialog.setMessage("Analyzing scans.");
+            this.progressDialog.setMessage("Analiza skanów.");
             this.progressDialog.show();
         }
 
@@ -322,5 +356,39 @@ public class InventorySessionActivity extends AppCompatActivity {
                 this.progressDialog.dismiss();
             }
         }
+    }
+
+    private class RoomReportUploader extends AsyncTask<String, Void, Boolean>{
+        private ProgressDialog progressDialog;
+        private InventoryReport inventoryReport;
+
+        public RoomReportUploader(InventorySessionActivity activity, InventoryReport inventoryReport){
+            this.progressDialog = new ProgressDialog(activity);
+            this.inventoryReport = inventoryReport;
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            return this.inventoryReport.sendInventoryReport(params[0], params[1]);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            this.progressDialog.setMessage("Wysyłanie raportu.");
+            this.progressDialog.show();
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            if(this.progressDialog.isShowing()){
+                this.progressDialog.dismiss();
+            }
+            if(result){
+                finish();
+            } else {
+
+            }
+        }
+
     }
 }
