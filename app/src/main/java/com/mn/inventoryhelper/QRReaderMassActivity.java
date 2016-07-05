@@ -1,8 +1,10 @@
 package com.mn.inventoryhelper;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.PointF;
+import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -56,6 +58,8 @@ public class QRReaderMassActivity extends Activity implements QRCodeReaderView.O
 
         } else {
             readCodes.add(text);
+            Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+            v.vibrate(400);
             Toast toast = Toast.makeText(getApplicationContext(), "Przeczytano: " + text, Toast.LENGTH_SHORT);
             toast.show();
         }

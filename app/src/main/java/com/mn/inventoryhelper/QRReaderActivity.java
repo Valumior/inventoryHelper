@@ -1,9 +1,11 @@
 package com.mn.inventoryhelper;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.PointF;
 import android.os.Bundle;
+import android.os.Vibrator;
 
 import com.dlazaro66.qrcodereaderview.QRCodeReaderView;
 import com.dlazaro66.qrcodereaderview.QRCodeReaderView.OnQRCodeReadListener;
@@ -23,7 +25,8 @@ public class QRReaderActivity extends Activity implements OnQRCodeReadListener {
 
     @Override
     public void onQRCodeRead(String text, PointF[] points) {
-        System.out.println(text);
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        v.vibrate(400);
         Intent intent = new Intent(getApplicationContext(), EntryDetailsActivity.class);
         intent.putExtra("idNumber", text);
         startActivity(intent);

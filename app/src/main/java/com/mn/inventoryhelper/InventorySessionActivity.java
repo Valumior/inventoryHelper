@@ -249,6 +249,7 @@ public class InventorySessionActivity extends AppCompatActivity {
                                 dialog.dismiss();
                             }
                         });
+                        builder.create().show();
                     }
                 });
 
