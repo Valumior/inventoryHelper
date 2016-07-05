@@ -2,6 +2,7 @@ package com.mn.inventoryhelper;
 
 import android.support.annotation.Nullable;
 
+import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,16 +17,16 @@ import java.util.Date;
 
 public class InventoryOrder {
     private int id;
-    private Date dateOrdered;
+    private DateTime dateOrdered;
     private boolean completed;
 
     public InventoryOrder() {
         this.id = 0;
-        this.dateOrdered = new Date();
+        this.dateOrdered = new DateTime();
         this.completed = false;
     }
 
-    public InventoryOrder(int id, Date dateOrdered, boolean completed) {
+    public InventoryOrder(int id, DateTime dateOrdered, boolean completed) {
         this.id = id;
         this.dateOrdered = dateOrdered;
         this.completed = completed;
@@ -39,11 +40,11 @@ public class InventoryOrder {
         this.id = id;
     }
 
-    public Date getDateOrdered() {
+    public DateTime getDateOrdered() {
         return dateOrdered;
     }
 
-    public void setDateOrdered(Date dateOrdered) {
+    public void setDateOrdered(DateTime dateOrdered) {
         this.dateOrdered = dateOrdered;
     }
 
@@ -56,7 +57,7 @@ public class InventoryOrder {
     }
 
     public static InventoryOrder parseJSON(JSONObject jsonObject) throws JSONException{
-        return new InventoryOrder(jsonObject.getInt("id"), new Date(jsonObject.getString("date_ordered")),
+        return new InventoryOrder(jsonObject.getInt("id"), new DateTime(jsonObject.getString("date_ordered")),
                 jsonObject.getBoolean("completed"));
     }
 

@@ -2,12 +2,14 @@ package com.mn.inventoryhelper;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -21,6 +23,15 @@ public class InventoryOrderActivity extends AppCompatActivity {
         setContentView(R.layout.activity_inventory_order);
 
         inventoryOrderList = (ListView) findViewById(R.id.inventoryOrderList);
+
+        SharedPreferences sharedPreferences = getSharedPreferences(InventoryHelperApplication.getPREFERENCES(), MODE_PRIVATE);
+        String server = sharedPreferences.getString("server", "");
+
+        InventoryHelperApplication application = (InventoryHelperApplication) getApplicationContext();
+        String token = application.getToken();
+
+        InventoryOrderDownloader downloader = new InventoryOrderDownloader(InventoryOrderActivity.this);
+        downloader.execute(server, token);
     }
 
     class InventoryOrderDownloader extends AsyncTask<String, Void, ArrayList<InventoryOrder>>{
@@ -60,6 +71,9 @@ public class InventoryOrderActivity extends AppCompatActivity {
                         startActivity(intent);
                     }
                 });
+            } else {
+                Toast toast = Toast.makeText(getApplicationContext(), "Brak zleceń inwentaryzacyjnych.", Toast.LENGTH_SHORT);
+                toast.show();
             }
         }
     }
