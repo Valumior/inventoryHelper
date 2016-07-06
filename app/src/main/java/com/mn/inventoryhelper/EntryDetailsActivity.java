@@ -70,16 +70,21 @@ public class EntryDetailsActivity extends AppCompatActivity {
                 entryDetailsRoom.setText(entry.getRoom().toString());
                 entryDetailsDescription.setText(entry.getDescription());
 
-                entryDetailsEditButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent = new Intent(getApplicationContext(), EntryEditActivity.class);
-                        intent.putExtra("idNumber", entry.getSigning());
-                        intent.putExtra("room", entry.getRoom().toString());
-                        startActivity(intent);
-                        finish();
-                    }
-                });
+                InventoryHelperApplication application = (InventoryHelperApplication) getApplicationContext();
+
+                if(application.getUserPermissions().isAdmin() || application.getUserPermissions().isEditAllowed()) {
+                    entryDetailsEditButton.setVisibility(View.VISIBLE);
+                    entryDetailsEditButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(getApplicationContext(), EntryEditActivity.class);
+                            intent.putExtra("idNumber", entry.getSigning());
+                            intent.putExtra("room", entry.getRoom().toString());
+                            startActivity(intent);
+                            finish();
+                        }
+                    });
+                }
             } else {
                 Toast toast = Toast.makeText(getApplicationContext(), "Connection error. Check your connection and try again.", Toast.LENGTH_SHORT);
                 toast.show();
