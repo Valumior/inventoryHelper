@@ -17,6 +17,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        InventoryHelperApplication application = (InventoryHelperApplication) getApplicationContext();
+
         readQRButton = (Button) findViewById(R.id.readQRButton);
         getAllRoomsButton = (Button) findViewById(R.id.getAllRoomsButton);
         getAllAddressesButton = (Button) findViewById(R.id.getAllAddressesButton);
@@ -46,12 +48,15 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        getInventoryOrdersButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), InventoryOrderActivity.class);
-                startActivity(intent);
-            }
-        });
+        if(application.getUserPermissions().isAdmin() || application.getUserPermissions().isInventory()) {
+            getInventoryOrdersButton.setVisibility(View.VISIBLE);
+            getInventoryOrdersButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(getApplicationContext(), InventoryOrderActivity.class);
+                    startActivity(intent);
+                }
+            });
+        }
     }
 }
