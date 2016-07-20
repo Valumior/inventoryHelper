@@ -134,12 +134,12 @@ public class Entry {
 
     @NonNull
     public static String URLifySigning(String signing){
-        return signing.replace(' ', '_').replace('/', '-');
+        return signing.replace(" ", "_").replace("/", "__");
     }
 
     @NonNull
     public static String DeURLifySigning(String signing){
-        return signing.replace('_', ' ').replace('-', '/');
+        return signing.replace("__", "/").replace("_", " ");
     }
 
     @Nullable
