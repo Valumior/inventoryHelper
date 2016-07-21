@@ -115,6 +115,7 @@ public class RoomListActivity extends AppCompatActivity {
                             intent.putExtra("room", room.getId());
                             intent.putExtra("orderId", orderId);
                             startActivity(intent);
+                            finish();
                         }
                     });
                 } else {
