@@ -91,7 +91,7 @@ public class Entry {
     public String getInventoryStatusString(){
         switch (this.inventoryStatus){
             case MISSING:
-                return "R";
+                return "M";
             case PRESENT:
                 return "P";
             case EXTRA:
