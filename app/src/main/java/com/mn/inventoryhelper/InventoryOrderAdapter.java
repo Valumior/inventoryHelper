@@ -25,7 +25,7 @@ public class InventoryOrderAdapter extends ArrayAdapter<InventoryOrder> {
 
         TextView orderItemDate = (TextView) convertView.findViewById(R.id.orderItemDate);
 
-        orderItemDate.setText(inventoryOrder.getDateOrdered().toString());
+        orderItemDate.setText("Zlecenie " + inventoryOrder.getDateOrdered().toString("dd/MM/yyyy"));
         orderItemDate.setTextColor(Color.BLACK);
 
         return convertView;
