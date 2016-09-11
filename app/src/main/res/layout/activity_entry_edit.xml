@@ -24,7 +24,7 @@
         android:id="@+id/entryEditAddressLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pick address:"/>
+        android:text="Wybierz adres:"/>
 
     <Spinner
         android:id="@+id/entryEditAddressSpinner"
@@ -38,7 +38,7 @@
         android:visibility="invisible"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pick room:"/>
+        android:text="Wybierz Pomieszczenie:"/>
 
     <Spinner
         android:visibility="invisible"
@@ -54,6 +54,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="right"
-        android:text="Confirm"/>
+        android:text="Zatwierdź"/>
 
 </LinearLayout>
