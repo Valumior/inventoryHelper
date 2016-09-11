@@ -13,7 +13,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Server address:"/>
+        android:text="Adres serwera:"/>
 
     <EditText
         android:id="@+id/serverAddressEdit"
@@ -29,7 +29,7 @@
             android:id="@+id/serverSettingCancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cancel"/>
+            android:text="Anuluj"/>
         <TextView
             android:layout_width="0px"
             android:layout_height="wrap_content"
@@ -38,7 +38,7 @@
             android:id="@+id/serverSettingSave"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save"/>
+            android:text="Zapisz"/>
 
     </LinearLayout>
 

@@ -101,7 +101,7 @@ public class LoginActivity extends AppCompatActivity {
                 UserPermissionsDownloader downloader = new UserPermissionsDownloader(this.progressDialog);
                 downloader.execute();
             } else {
-                errorText.setText("Login failed. Check server address and login credentials.");
+                errorText.setText("Logowanie nieudane. Sprawdź poprawność danych oraz adres serwera.");
                 errorText.setTextColor(Color.RED);
                 errorText.setVisibility(View.VISIBLE);
 
@@ -143,7 +143,7 @@ public class LoginActivity extends AppCompatActivity {
             }
             else {
 
-                errorText.setText("Login failed. Check server address and login credentials.");
+                errorText.setText("Logowanie nieudane. Sprawdź poprawność danych oraz adres serwera.");
                 errorText.setTextColor(Color.RED);
                 errorText.setVisibility(View.VISIBLE);
 
